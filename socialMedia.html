@@ -156,6 +156,28 @@
             padding: 20px;
         }
     }
+
+    /* ✅ Force perfect centering for logo + tagline on mobile */
+    @media (max-width: 768px) {
+        header {
+            width: 100%;
+            text-align: center;
+        }
+        header > div {
+            display: inline-block;
+            text-align: center;
+        }
+        .top-logo {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .tagline {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+        }
+    }
 </style>
 </head>
 <body>

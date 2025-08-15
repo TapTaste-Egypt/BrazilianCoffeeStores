@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>Coffee Stack — Cartoon Café</title>
+<style>
+  :root{
+    --latte1:#f8e6cf;
+    --latte2:#f1d3ac;
+    --espresso:#5b3a27;
+    --bean:#6f4e37;
+    --cream:#fff7ef;
+    --shadow:rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; overflow:hidden; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif;
+    background: linear-gradient(180deg,var(--latte1),var(--latte2));
+    touch-action: manipulation;
+  }
+  canvas{display:block; width:100vw; height:100vh}
+  #hud{
+    position:fixed; inset:auto 0 auto 0; top:14px; display:flex; justify-content:center; gap:12px; z-index:5; pointer-events:none;
+  }
+  .pill{
+    background:rgba(255,255,255,.78);
+    border:1px solid rgba(0,0,0,.08);
+    padding:.45rem .8rem; border-radius:999px; font-weight:700; color:#3a281d;
+    box-shadow:0 6px 16px var(--shadow); pointer-events:auto;
+  }
+  .pill b{font-weight:900}
+  #btn{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    padding:.9rem 1.3rem; border:none; border-radius:16px; background:linear-gradient(180deg,#ffe3b9,#ffce86);
+    color:#432a1a; font-weight:800; letter-spacing:.3px; cursor:pointer; z-index:6;
+    box-shadow:0 10px 24px var(--shadow), inset 0 1px 0 #fff6e3; display:none;
+  }
+  #btn:active{transform:translateX(-50%) scale(.98)}
+  #perfect{
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-60%); pointer-events:none;
+    font-weight:900; font-size: clamp(24px, 5vw, 44px); color:#4b2f1f; text-shadow:0 8px 24px rgba(0,0,0,.25);
+    opacity:0; transition:opacity .28s ease, transform .28s ease;
+  }
+  #perfect.show{opacity:1; transform:translate(-50%,-65%)}
+  #message{
+    position:fixed; left:50%; top:45%; transform:translate(-50%,-50%); pointer-events:none;
+    font-weight:900; font-size: clamp(20px, 4vw, 36px); color:#ff8c00; text-shadow:0 6px 18px rgba(0,0,0,.2);
+    opacity:0; transition:opacity .3s ease, transform .3s ease;
+  }
+  #message.show{opacity:1; transform:translate(-50%,-55%)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <div class="pill">Score: <b id="score">0</b></div>
+  <div class="pill">Level: <b id="lvl">1</b></div>
+  <div class="pill">Best: <b id="best">0</b></div>
+</div>
+<button id="btn">Play Again</button>
+<div id="perfect">PERFECT!</div>
+<div id="message"></div>
+
+<script>
+(() => {
+  // ===== Canvas setup (retina crisp) =====
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  function resize(){
+    W = innerWidth; H = innerHeight;
+    canvas.width  = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    layoutSizes();
+  }
+  addEventListener('resize', resize);
+
+  // ===== UI =====
+  const scoreEl = document.getElementById('score');
+  const lvlEl   = document.getElementById('lvl');
+  const bestEl  = document.getElementById('best');
+  const againBtn= document.getElementById('btn');
+  const perfectEl = document.getElementById('perfect');
+  const messageEl = document.getElementById('message');
+
+  let best = +(localStorage.getItem('coffee-best')||0);
+  bestEl.textContent = best;
+
+  // ===== Game state =====
+  const beans = [];
+  let stack = [];    // placed cups
+  let mover  = null; // moving cup
+  let cam = 0;       // camera offset (worldY - cam = screenY)
+  let score = 0;
+  let level = 1;
+  let running = true;
+  let gameOver = false;
+  let particles = [];
+  let floatingTexts = [];
+
+  // sizes that adapt to screen
+  let CUP_H, BASE_W, MIN_W, LEFT_BOUND, RIGHT_BOUND, GROUND_Y, PERFECT_PX;
+
+  function layoutSizes(){
+    CUP_H = Math.max(44, Math.min(84, H * 0.12)); // base cup height
+    BASE_W = Math.min(280, Math.max(160, W * 0.55));
+    MIN_W  = Math.max(18, BASE_W * 0.12);
+    LEFT_BOUND  = 12;
+    RIGHT_BOUND = Math.max(LEFT_BOUND+40, W - 12);
+    GROUND_Y = H - 60;
+    PERFECT_PX = Math.max(6, Math.min(12, W * 0.02));
+  }
+
+  // speed scaling
+  let baseSpeed = 2.6;
+  let speed = baseSpeed;
+  let dir = 1;
+
+  // Brazilian coffee brands
+  const brands = ['Café Pilão', 'Café do Ponto', '3 Corações', 'Melitta', 'Orfeu', 'Santa Mônica', 'Unique', 'Café Caboclo', 'Nescafé'];
+
+  // ===== Helpers =====
+  function reset(){
+    gameOver = false; running = true; cam = 0; level = 1; speed = baseSpeed; dir = 1; score = 0;
+    stack = [];
+    particles = [];
+    floatingTexts = [];
+    // Base cup on the floor
+    const baseX = (W - BASE_W)/2;
+    const base = makeCup(baseX, GROUND_Y, BASE_W);
+    stack.push(base);
+    spawnMover(true);
+    updateHUD();
+    againBtn.style.display = 'none';
+    perfectEl.classList.remove('show');
+    // Beans
+    beans.length = 0;
+    const n = 24;
+    for(let i=0;i<n;i++){
+      beans.push({x: Math.random()*W, y: Math.random()*H, r: 7+Math.random()*10, a:.08+.08*Math.random(), s: .2+.4*Math.random()});
+    }
+  }
+
+  function updateHUD(){
+    scoreEl.textContent = score;
+    lvlEl.textContent   = level;
+  }
+
+  function makeCup(x, y, w){
+    // alternate cup type for variety
+    const brand = brands[Math.floor(Math.random() * brands.length)];
+    return { x, y, w, h: CUP_H, t: (stack.length % 2 ? 'mug':'togo'), squish:0, brand };
+  }
+
+  function spawnMover(isFirst=false){
+    const last = stack[stack.length-1];
+    const y = last.y - CUP_H; // exactly one cup-height above last
+    const fromLeft = Math.random() < 0.5;
+    // shrink width slightly with levels for challenge
+    const levelShrink = Math.min(0.28, (level-1)*0.02);
+    const w = Math.max(MIN_W, last.w * (1 - levelShrink));
+    const x = fromLeft ? LEFT_BOUND : Math.max(LEFT_BOUND, RIGHT_BOUND - w);
+    mover = makeCup(x, y, w);
+    dir = fromLeft ? +1 : -1;
+
+    // keep spawn always visible
+    cam = (mover.y - mover.h) - H * 0.3;
+    if (isFirst) cam = 0;
+  }
+
+  function showMessage(text){
+    messageEl.textContent = text;
+    messageEl.classList.remove('show');
+    void messageEl.offsetWidth;
+    messageEl.classList.add('show');
+    setTimeout(()=>messageEl.classList.remove('show'), 800);
+  }
+
+  function createSplash(cx, cy, count){
+    for(let i=0; i<count; i++){
+      const angle = Math.random() * Math.PI - Math.PI/2; // upward
+      const vel = 2 + Math.random() * 3;
+      particles.push({
+        x: cx,
+        y: cy,
+        vx: Math.cos(angle) * vel,
+        vy: Math.sin(angle) * vel,
+        size: 1 + Math.random() * 2,
+        life: 1,
+        color: '#3a281d'
+      });
+    }
+  }
+
+  // ===== Drawing =====
+  function drawBackground(t){
+    // floating coffee beans with slight parallax vs camera
+    for(const b of beans){
+      b.y += b.s;
+      if (b.y - cam > H + 30) { b.y -= H + 90; b.x = Math.random()*W; }
+      ctx.globalAlpha = b.a;
+      ctx.fillStyle = '#6f4e37';
+      ctx.beginPath();
+      ctx.ellipse(b.x, b.y - cam*0.2, b.r, b.r*0.6, Math.PI/4, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function roundRect(x,y,w,h,r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr,y);
+    ctx.arcTo(x+w,y,x+w,y+h,rr);
+    ctx.arcTo(x+w,y+h,x,y+h,rr);
+    ctx.arcTo(x,y+h,x,y,rr);
+    ctx.arcTo(x,y,x+w,y,rr);
+    ctx.closePath();
+  }
+
+  function drawToGo(c, t, isMoving){
+    const {x,y,w,h,squish,brand} = c;
+    const top = y - h;
+    const scaleY = 1 - 0.3 * Math.max(0, Math.min(1, squish));
+    const scaledH = h*scaleY;
+    const oy = h - scaledH; // keep bottom anchored
+
+    // shadow
+    ctx.globalAlpha=.28;
+    ctx.fillStyle='rgba(0,0,0,.35)';
+    ctx.beginPath();
+    ctx.ellipse(x + w/2, y + 6, w*.4, 7, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha=1;
+
+    // cup body
+    const bodyGrad = ctx.createLinearGradient(x, top+oy+8, x, top+oy+scaledH-12);
+    bodyGrad.addColorStop(0, '#fff4e6');
+    bodyGrad.addColorStop(1, '#ffd4b8');
+    ctx.fillStyle = bodyGrad;
+    ctx.strokeStyle= '#6f4e37';
+    ctx.lineWidth = 3;
+    roundRect(x, top+oy+8, w, scaledH-12, 12);
+    ctx.fill(); ctx.stroke();
+
+    // brand name
+    ctx.fillStyle = '#6f4e37';
+    ctx.font = `${Math.min(12, w/10)}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(brand, x + w/2, top + oy + scaledH * 0.5);
+
+    // lid
+    ctx.fillStyle = '#6f4e37';
+    roundRect(x-2, top+oy-8, w+4, 12, 8);
+    ctx.fill();
+
+    // sip hole
+    ctx.fillStyle = '#3a281d';
+    roundRect(x + w - 24, top+oy - 6, 16, 6, 3);
+    ctx.fill();
+
+    // animated steam
+    ctx.strokeStyle = 'rgba(255,255,255,.7)';
+    ctx.lineWidth = 2;
+    const sx = x + w*0.5, sy = top+oy-10;
+    const offset1 = Math.sin(t / 200) * 3;
+    const offset2 = Math.sin(t / 250 + 1) * 3;
+    ctx.beginPath();
+    ctx.moveTo(sx-10 + offset1, sy);
+    ctx.quadraticCurveTo(sx-14 + offset1, sy-16, sx-8 + offset1, sy-30);
+    ctx.moveTo(sx+10 + offset2, sy);
+    ctx.quadraticCurveTo(sx+14 + offset2, sy-16, sx+8 + offset2, sy-30);
+    ctx.stroke();
+  }
+
+  function drawMug(c, t, isMoving){
+    const {x,y,w,h,squish,brand} = c;
+    const top = y - h;
+    const scaleY = 1 - 0.3 * Math.max(0, Math.min(1, squish));
+    const scaledH = h*scaleY;
+    const oy = h - scaledH;
+
+    // shadow
+    ctx.globalAlpha=.28;
+    ctx.fillStyle='rgba(0,0,0,.35)';
+    ctx.beginPath();
+    ctx.ellipse(x + w/2, y + 6, w*.4, 7, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha=1;
+
+    // body
+    const r = 12;
+    const bodyGrad = ctx.createLinearGradient(x, top+oy, x, top+oy + scaledH);
+    bodyGrad.addColorStop(0, '#ffe8d1');
+    bodyGrad.addColorStop(1, '#ffc7a3');
+    ctx.fillStyle = bodyGrad;
+    ctx.strokeStyle='#6f4e37';
+    ctx.lineWidth=3;
+    roundRect(x, top+oy, w, scaledH, r);
+    ctx.fill(); ctx.stroke();
+
+    // handle
+    ctx.beginPath();
+    ctx.lineWidth=6;
+    ctx.strokeStyle='#caa787';
+    ctx.arc(x+w-6, top+oy+scaledH*0.48, scaledH*0.28, -Math.PI/2.2, Math.PI/1.2, true);
+    ctx.stroke();
+
+    // rim
+    const rimGrad = ctx.createLinearGradient(x+6, top+oy-8, x+6, top+oy-8 + 10);
+    rimGrad.addColorStop(0, '#ffffff');
+    rimGrad.addColorStop(1, '#ffece0');
+    ctx.fillStyle = rimGrad;
+    roundRect(x+6, top+oy-8, w-12, 10, 6);
+    ctx.fill();
+
+    // coffee liquid with slosh if moving
+    const liquidTop = top + oy + scaledH * 0.15;
+    const liquidH = scaledH * 0.6;
+    const liquidGrad = ctx.createLinearGradient(x + 8, liquidTop, x + 8, liquidTop + liquidH);
+    liquidGrad.addColorStop(0, '#6f4e37');
+    liquidGrad.addColorStop(1, '#3a281d');
+    ctx.fillStyle = liquidGrad;
+
+    ctx.beginPath();
+    const tilt = isMoving ? -dir * speed * 0.5 : 0; // fixed direction for realistic lag
+    const leftY = liquidTop + tilt;
+    const rightY = liquidTop - tilt;
+    ctx.moveTo(x + 8, leftY + liquidH);
+    ctx.lineTo(x + w - 8, rightY + liquidH);
+    ctx.lineTo(x + w - 8, rightY);
+    ctx.lineTo(x + 8, leftY);
+    ctx.closePath();
+    ctx.fill();
+
+    // brand name
+    ctx.fillStyle = '#6f4e37';
+    ctx.font = `${Math.min(12, w/10)}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(brand, x + w/2, top + oy + scaledH * 0.8);
+
+    // animated steam
+    ctx.strokeStyle='rgba(255,255,255,.7)';
+    ctx.lineWidth=2;
+    const sx = x + w*0.5, sy = top+oy-6;
+    const offset1 = Math.sin(t / 200) * 3;
+    const offset2 = Math.sin(t / 250 + 1) * 3;
+    ctx.beginPath();
+    ctx.moveTo(sx-12 + offset1, sy);
+    ctx.quadraticCurveTo(sx-16 + offset1, sy-18, sx-10 + offset1, sy-34);
+    ctx.moveTo(sx+12 + offset2, sy);
+    ctx.quadraticCurveTo(sx+16 + offset2, sy-18, sx+10 + offset2, sy-34);
+    ctx.stroke();
+  }
+
+  function drawCup(c, t){
+    const isMoving = (c === mover);
+    if (c.t === 'mug') drawMug(c, t, isMoving);
+    else drawToGo(c, t, isMoving);
+  }
+
+  // ===== Placement & logic =====
+  function levelUpIfNeeded(){
+    const nextLevel = Math.floor(score/5) + 1; // every 5 stacks = new level
+    if (nextLevel > level){
+      level = nextLevel;
+      updateHUD();
+    }
+  }
+
+  function drop(){
+    if (gameOver || !running || !mover) return;
+    const last = stack[stack.length-1];
+    const lx0 = last.x, lx1 = last.x + last.w;
+    const mx0 = mover.x, mx1 = mover.x + mover.w;
+
+    const overlapL = Math.max(lx0, mx0);
+    const overlapR = Math.min(lx1, mx1);
+    const overlapW = overlapR - overlapL;
+
+    if (overlapW <= 0) { // miss completely -> game over
+      end();
+      return;
+    }
+
+    // perfect?
+    let isPerfect = false;
+    if (Math.abs(mx0 - lx0) <= PERFECT_PX && Math.abs(mx1 - lx1) <= PERFECT_PX){
+      mover.x = last.x;
+      mover.w = Math.min(BASE_W, mover.w + 8);
+      flashPerfect();
+      score += 2;
+      isPerfect = true;
+    } else {
+      mover.x = overlapL;
+      mover.w = Math.max(MIN_W, overlapW);
+      score += 1;
+    }
+
+    mover.squish = 1;
+    stack.push(mover);
+
+    // splash if mug
+    if (mover.t === 'mug') {
+      createSplash(mover.x + mover.w / 2, mover.y - mover.h + 20, 15);
+    }
+
+    // floating score
+    floatingTexts.push({
+      x: mover.x + mover.w / 2,
+      y: mover.y - mover.h,
+      text: `+${isPerfect ? 2 : 1}`,
+      alpha: 1,
+      vy: -1.5
+    });
+
+    // level progression
+    levelUpIfNeeded();
+
+    // spawn next
+    spawnMover();
+
+    // speed up every 3 drops
+    const drops = stack.length - 1;
+    if (drops % 3 === 0 && drops > 0) {
+      const increase = 0.5;
+      speed = Math.min(8, speed + increase);
+      showMessage(`Speed up by ${increase}!`);
+    }
+
+    // update HUD
+    updateHUD();
+  }
+
+  function flashPerfect(){
+    perfectEl.classList.remove('show');
+    void perfectEl.offsetWidth; // reflow to re-trigger
+    perfectEl.classList.add('show');
+    setTimeout(()=>perfectEl.classList.remove('show'), 420);
+  }
+
+  function end(){
+    gameOver = true; running = false; mover = null;
+    best = Math.max(best, score);
+    localStorage.setItem('coffee-best', best);
+    bestEl.textContent = best;
+    againBtn.style.display = 'block';
+  }
+
+  // ===== Loop =====
+  let lastT = 0;
+  function tick(t){
+    requestAnimationFrame(tick);
+    const dt = Math.min(32, t - lastT || 16); lastT = t;
+
+    // clear
+    ctx.clearRect(0,0,W,H);
+
+    // background beans
+    drawBackground(t);
+
+    if (!gameOver && mover){
+      // move horizontally + bounce at edges respecting mover width
+      const leftBound = LEFT_BOUND;
+      const rightBound = Math.max(leftBound+MIN_W, W - LEFT_BOUND - mover.w);
+      mover.x += dir * speed;
+      if (mover.x <= leftBound){ mover.x = leftBound; dir = +1; }
+      if (mover.x >= rightBound){ mover.x = rightBound; dir = -1; }
+    }
+
+    // camera follows moving cup (keeps it visible)
+    // keep the top of mover around ~30% of screen height
+    const targetCam = (() => {
+      const focus = mover ? (mover.y - mover.h) : (stack[stack.length-1].y - stack[stack.length-1].h);
+      const desiredScreenY = H * 0.3;
+      return focus - desiredScreenY;
+    })();
+    cam += (targetCam - cam) * 0.35; // faster follow
+
+    // draw stack + mover
+    ctx.save();
+    ctx.translate(0, -cam);
+
+    // particles
+    for(let i = particles.length - 1; i >= 0; i--){
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.2;
+      p.life -= 0.02;
+      if(p.life <= 0){
+        particles.splice(i, 1);
+        continue;
+      }
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // floating texts
+    for(let i = floatingTexts.length - 1; i >= 0; i--){
+      const ft = floatingTexts[i];
+      ft.y += ft.vy;
+      ft.alpha -= 0.01;
+      if(ft.alpha <= 0){
+        floatingTexts.splice(i, 1);
+        continue;
+      }
+      ctx.fillStyle = `rgba(75, 47, 31, ${ft.alpha})`;
+      ctx.font = 'bold 20px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ft.text, ft.x, ft.y);
+    }
+
+    for (let i=0;i<stack.length;i++){
+      const c = stack[i];
+      if (c.squish > 0) c.squish = Math.max(0, c.squish - 0.06);
+      drawCup(c, t);
+    }
+    if (mover) drawCup(mover, t);
+
+    // floor line
+    ctx.fillStyle='rgba(0,0,0,.22)';
+    ctx.fillRect(0, GROUND_Y+4, W, 3);
+
+    ctx.restore();
+  }
+
+  // ===== Input =====
+  addEventListener('pointerdown', drop, {passive:true});
+  addEventListener('keydown', e=>{
+    const k = e.key.toLowerCase();
+    if (k === ' ' || k === 'enter') { e.preventDefault(); drop(); }
+    if (k === 'r') { reset(); }
+  });
+  againBtn.addEventListener('click', reset);
+
+  // init
+  resize();
+  reset();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

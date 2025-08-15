@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brazilian Coffee Stores Menu</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            color: #3b2a20;
+            background: #fff8ef;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+            overscroll-behavior: none;
+        }
+
+        /* Animated Background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(145deg, #fff8ef, #f5e7d4);
+        }
+
+        .background::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M5 2c1.5 0 2.5 1 2.5 2s-1 2-2.5 2-2.5-1-2.5-2 1-2 2.5-2z" fill="rgba(139,94,60,0.08)"/></svg>') repeat;
+            background-size: 20px 20px;
+            animation: floatBeans 25s linear infinite;
+            opacity: 0.08;
+        }
+
+        @keyframes floatBeans {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-40px, -40px); }
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #fff8ef, #f5e7d4);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 1s ease-out;
+            padding: 2rem 1.5rem;
+        }
+
+        .welcome-screen.hidden {
+            display: none;
+        }
+
+        .welcome-screen .hero {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-screen .logo {
+            max-width: 20vw;
+            min-width: 100px;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
+            animation: logoPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+
+        .welcome-screen .tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.8rem, 4.5vw, 2rem);
+            font-weight: 700;
+            color: #3b2a20;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .welcome-screen .sub-tagline {
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            color: #3b2a20;
+            opacity: 0.85;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-screen .home-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #b07a47;
+            border-radius: 25px;
+            background: transparent;
+            color: #3b2a20;
+            font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .welcome-screen .home-button:hover,
+        .welcome-screen .home-button:active {
+            background: #b07a47;
+            color: #fff8ef;
+            transform: scale(1.03);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+
+        .welcome-screen .home-button .category-icon {
+            font-family: 'Open Sans', sans-serif;
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
+        }
+
+        .welcome-screen .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.8rem;
+            max-width: 1100px;
+            width: 100%;
+            padding: 0 1rem;
+            overflow-y: auto;
+        }
+
+        .category-card {
+            background: rgba(255, 248, 239, 0.95);
+            border-radius: 12px;
+            padding: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardFadeIn 0.5s ease-out forwards;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .category-card:nth-child(2n) {
+            animation-delay: 0.15s;
+        }
+
+        .category-card:nth-child(3n) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes cardFadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .category-card:hover,
+        .category-card:active {
+            background: linear-gradient(135deg, #b07a47, #5c4033);
+            transform: scale(1.03) translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            color: #fff8ef;
+        }
+
+        .category-card:hover .category-title,
+        .category-card:active .category-title {
+            color: #fff8ef;
+        }
+
+        .category-card .category-icon {
+            font-size: clamp(1.8rem, 4vw, 2rem);
+            margin-bottom: 0.4rem;
+            transition: transform 0.3s ease;
+        }
+
+        .category-card:hover .category-icon,
+        .category-card:active .category-icon {
+            transform: scale(1.1);
+        }
+
+        .category-card .category-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1rem, 3vw, 1.15rem);
+            font-weight: 600;
+            color: #3b2a20;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            text-align: center;
+            padding: 1.2rem;
+            background: rgba(43, 28, 18, 0.95);
+            color: #fff8ef;
+            z-index: 1000;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            animation: fadeInDown 0.7s ease-out;
+            backdrop-filter: blur(5px);
+        }
+
+        header.hidden {
+            display: none;
+        }
+
+        header .logo {
+            max-width: 16vw;
+            min-width: 80px;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
+        }
+
+        header .tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-top: 0.6rem;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100%;
+            background: rgba(43, 28, 18, 0.95);
+            background-image: linear-gradient(to bottom, rgba(176, 122, 71, 0.15), rgba(176, 122, 71, 0.05));
+            z-index: 1001;
+            transform: translateX(-100%);
+            transition: transform 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.5s ease;
+            opacity: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            padding: 1.8rem;
+            border-right: 2px solid #b07a47;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .sidebar.active {
+            display: block;
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .sidebar-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .sidebar-backdrop.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 1.2rem;
+            left: 1.2rem;
+            z-index: 1002;
+            background: linear-gradient(135deg, #2b1c12, #4a3729);
+            border: none;
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle.active {
+            display: block;
+        }
+
+        .sidebar-toggle:hover,
+        .sidebar-toggle:active {
+            background: linear-gradient(135deg, #4a3729, #2b1c12);
+            transform: scale(1.05);
+        }
+
+        .sidebar-toggle span {
+            display: block;
+            width: 24px;
+            height: 3px;
+            background: #fff8ef;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle span::before,
+        .sidebar-toggle span::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 3px;
+            background: #fff8ef;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle span::before {
+            top: -8px;
+        }
+
+        .sidebar-toggle span::after {
+            top: 8px;
+        }
+
+        .sidebar-toggle.active span {
+            background: transparent;
+        }
+
+        .sidebar-toggle.active span::before {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .sidebar-toggle.active span::after {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            margin-top: 4.5rem;
+        }
+
+        .sidebar li {
+            margin: 0.8rem 0;
+            position: relative;
+        }
+
+        .sidebar li::after {
+            content: '';
+            position: absolute;
+            bottom: -0.4rem;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(176, 122, 71, 0.3);
+        }
+
+        .sidebar button {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: none;
+            background: transparent;
+            color: #fff8ef;
+            cursor: pointer;
+            font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar button .category-icon {
+            font-family: 'Open Sans', sans-serif;
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar button:hover .category-icon,
+        .sidebar button:active .category-icon {
+            transform: scale(1.1);
+        }
+
+        .sidebar button:hover,
+        .sidebar button:active {
+            color: #b07a47;
+            transform: scale(1.03);
+            text-decoration: underline;
+            text-decoration-color: #b07a47;
+            text-decoration-thickness: 1px;
+        }
+
+        .sidebar button.active {
+            color: #fff8ef;
+            font-weight: 700;
+            text-decoration: underline;
+            text-decoration-color: #fff8ef;
+            text-decoration-thickness: 2px;
+        }
+
+        /* Search Bar and Home Button */
+        .search-container {
+            position: sticky;
+            top: 0;
+            text-align: center;
+            margin: 0 auto;
+            max-width: 900px;
+            padding: 1rem;
+            z-index: 1000;
+            background: rgba(255, 248, 239, 0.97);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            animation: fadeInDown 0.7s ease-out;
+            border-radius: 12px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            border: 1px solid #b07a47;
+            border-radius: 30px;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 300;
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #searchInput:focus {
+            border-color: #b07a47;
+            box-shadow: 0 0 8px rgba(176,122,71,0.5);
+            transform: scale(1.01);
+        }
+
+        #searchSuggestions {
+            position: absolute;
+            width: 100%;
+            max-height: 220px;
+            overflow-y: auto;
+            background: rgba(255, 248, 239, 0.98);
+            border: 1px solid #b07a47;
+            border-radius: 8px;
+            z-index: 1002;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-top: 0.5rem;
+        }
+
+        #searchSuggestions div {
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            border-bottom: 1px solid rgba(176,122,71,0.2);
+        }
+
+        #searchSuggestions div:last-child {
+            border-bottom: none;
+        }
+
+        #searchSuggestions div:hover,
+        #searchSuggestions div:active {
+            background: rgba(176,122,71,0.15);
+            transform: scale(1.01);
+        }
+
+        .suggestion-price {
+            font-weight: 600;
+            color: #b07a47;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+        }
+
+        .home-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 1rem;
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #b07a47;
+            border-radius: 25px;
+            background: transparent;
+            color: #3b2a20;
+            cursor: pointer;
+            font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            z-index: 1002;
+        }
+
+        .home-button:hover,
+        .home-button:active {
+            background: #b07a47;
+            color: #fff8ef;
+            transform: scale(1.03);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+
+        .home-button .category-icon {
+            font-family: 'Open Sans', sans-serif;
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
+        }
+
+        /* Menu Section */
+        .menu-section {
+            max-width: 1100px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: calc(100vh - 220px);
+            padding-bottom: 220px; /* Space for footer */
+        }
+
+        .menu-section.hidden {
+            display: none;
+        }
+
+        .category-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 1.2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: slideDown 0.5s ease-out;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 95%;
+            overflow: auto;
+        }
+
+        .category-content.active {
+            display: block;
+        }
+
+        .category-content h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.6rem, 4vw, 1.8rem);
+            font-weight: 700;
+            color: #3b2a20;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid rgba(176,122,71,0.2);
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .category-content h3:hover {
+            color: #b07a47;
+        }
+
+        .category-content h3::after {
+            content: '▼';
+            position: absolute;
+            right: 1rem;
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        .category-content.collapsed h3::after {
+            transform: rotate(180deg);
+        }
+
+        .category-content.collapsed .items-container {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .items-container {
+            max-height: 1200px;
+            transition: max-height 0.5s ease, padding 0.5s ease;
+            padding: 0.8rem 0;
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.9rem 1.2rem;
+            border-bottom: 1px dashed rgba(176,122,71,0.2);
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            font-weight: 300;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-20px);
+            background: linear-gradient(90deg, rgba(176,122,71,0.05), transparent);
+            border-radius: 10px;
+            margin: 0.4rem 0;
+            min-height: 48px;
+        }
+
+        .menu-item.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .menu-item:hover,
+        .menu-item:active {
+            background: linear-gradient(90deg, rgba(176,122,71,0.15), transparent);
+            transform: scale(1.01);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .menu-item.highlight {
+            background: linear-gradient(90deg, rgba(176,122,71,0.25), transparent);
+        }
+
+        .price {
+            font-weight: 600;
+            color: #b07a47;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .note-item {
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            font-style: italic;
+            color: #3b2a20;
+            padding: 0.9rem 1.2rem;
+            border-bottom: 1px dashed rgba(176,122,71,0.2);
+            opacity: 0;
+            transform: translateX(-20px);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            margin: 0.4rem 0;
+            min-height: 48px;
+        }
+
+        .note-item.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        footer {
+            position: relative;
+            text-align: center;
+            margin: 2rem auto;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            color: #3b2a20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.2rem;
+            border-radius: 12px;
+            border-top: 1px solid rgba(176,122,71,0.2);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.7s ease-out;
+            width: 100%;
+            max-width: 90%;
+        }
+
+        footer.hidden {
+            display: none;
+        }
+
+        .note {
+            font-size: clamp(0.8rem, 2vw, 0.85rem);
+            color: rgba(59,42,32,0.8);
+            margin-top: 0.8rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .welcome-screen .category-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 0.8rem;
+            }
+
+            .category-card {
+                padding: 0.8rem;
+                min-height: 70px;
+                box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            }
+
+            .category-card .category-icon {
+                font-size: clamp(1.6rem, 3.5vw, 1.8rem);
+            }
+
+            .category-card .category-title {
+                font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+            }
+
+            .welcome-screen .home-button {
+                font-size: clamp(0.9rem, 2.5vw, 1rem);
+                padding: 0.7rem 1rem;
+            }
+
+            .search-container {
+                top: 0;
+                padding: 0.8rem;
+                max-width: 95%;
+            }
+
+            .home-button {
+                font-size: clamp(0.9rem, 2.5vw, 1rem);
+                padding: 0.7rem 1rem;
+            }
+
+            .menu-section {
+                margin: 1rem;
+                max-width: 95%;
+            }
+
+            .category-content {
+                padding: 1rem;
+                max-width: 95%;
+                border-radius: 10px;
+            }
+
+            .category-content h3 {
+                font-size: clamp(1.4rem, 3.5vw, 1.6rem);
+            }
+
+            .menu-item, .note-item {
+                font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+                padding: 0.8rem 1rem;
+                margin: 0.3rem 0;
+                min-height: 48px;
+            }
+
+            .price {
+                font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+                padding: 0.3rem 0.7rem;
+            }
+
+            .sidebar {
+                width: 220px;
+                padding: 1.5rem;
+            }
+
+            .sidebar button {
+                font-size: clamp(0.9rem, 2.5vw, 1rem);
+                padding: 0.7rem 0.9rem;
+            }
+
+            footer {
+                margin: 1.5rem auto;
+                max-width: 95%;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-screen .logo {
+                max-width: 20vw;
+                min-width: 100px;
+            }
+
+            .welcome-screen .tagline {
+                font-size: clamp(1.6rem, 4vw, 1.8rem);
+            }
+
+            .welcome-screen .sub-tagline {
+                font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            }
+
+            .welcome-screen .home-button {
+                font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+                padding: 0.7rem 0.9rem;
+            }
+
+            .welcome-screen .category-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 0.8rem;
+            }
+
+            .category-card {
+                padding: 0.8rem;
+                min-height: 70px;
+            }
+
+            .category-card .category-icon {
+                font-size: clamp(1.6rem, 3.5vw, 1.8rem);
+            }
+
+            .category-card .category-title {
+                font-size: clamp(0.9rem, 2.5vw, 1rem);
+            }
+
+            .sidebar {
+                width: 160px;
+                padding: 1.2rem;
+            }
+
+            .sidebar button {
+                font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+                padding: 0.6rem 0.8rem;
+            }
+
+            .sidebar-toggle {
+                width: 36px;
+                height: 36px;
+            }
+
+            .sidebar-toggle span,
+            .sidebar-toggle span::before,
+            .sidebar-toggle span::after {
+                width: 20px;
+                height: 2px;
+            }
+
+            .sidebar-toggle span::before {
+                top: -6px;
+            }
+
+            .sidebar-toggle span::after {
+                top: 6px;
+            }
+
+            .sidebar-toggle.active span::before {
+                transform: translateY(6px) rotate(45deg);
+            }
+
+            .sidebar-toggle.active span::after {
+                transform: translateY(-6px) rotate(-45deg);
+            }
+
+            header .logo {
+                max-width: 16vw;
+                min-width: 80px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { max-height: 0; opacity: 0; }
+            to { max-height: 1200px; opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen">
+        <div class="hero">
+            <img src="../images/PHOTO-2025-07-14-16-16-31-removebg-preview.png" alt="Brazilian Coffee Stores Logo" class="logo">
+            <div class="tagline">Welcome to Brazilian Coffee Stores</div>
+            <div class="sub-tagline">Indulge in our exquisite menu of drinks and delights</div>
+            <a href="../index.html" class="home-button"><span class="category-icon">🏠</span>Back to Home</a>
+        </div>
+        <div class="category-grid">
+            <div class="category-card" data-category="hot-drinks">
+                <div class="category-icon">☕</div>
+                <div class="category-title">Hot Drinks</div>
+            </div>
+            <div class="category-card" data-category="cold-drinks">
+                <div class="category-icon">🧊</div>
+                <div class="category-title">Cold Drinks</div>
+            </div>
+            <div class="category-card" data-category="smoothies">
+                <div class="category-icon">🥤</div>
+                <div class="category-title">Smoothies</div>
+            </div>
+            <div class="category-card" data-category="frappes">
+                <div class="category-icon">🧋</div>
+                <div class="category-title">Frappes</div>
+            </div>
+            <div class="category-card" data-category="milk-shakes">
+                <div class="category-icon">🥛</div>
+                <div class="category-title">Milk Shakes</div>
+            </div>
+            <div class="category-card" data-category="soft-drinks">
+                <div class="category-icon">🥤</div>
+                <div class="category-title">Soft Drinks</div>
+            </div>
+            <div class="category-card" data-category="fresh-juices">
+                <div class="category-icon">🍹</div>
+                <div class="category-title">Fresh Juices</div>
+            </div>
+            <div class="category-card" data-category="cocktails">
+                <div class="category-icon">🍹</div>
+                <div class="category-title">Cocktails</div>
+            </div>
+            <div class="category-card" data-category="salads">
+                <div class="category-icon">🥗</div>
+                <div class="category-title">Salads</div>
+            </div>
+            <div class="category-card" data-category="sandwiches">
+                <div class="category-icon">🥪</div>
+                <div class="category-title">Sandwiches</div>
+            </div>
+            <div class="category-card" data-category="toasts">
+                <div class="category-icon">🍞</div>
+                <div class="category-title">Toasts</div>
+            </div>
+            <div class="category-card" data-category="tortilla-bread">
+                <div class="category-icon">🌯</div>
+                <div class="category-title">Tortilla Bread</div>
+            </div>
+            <div class="category-card" data-category="bakeries">
+                <div class="category-icon">🥐</div>
+                <div class="category-title">Bakeries</div>
+            </div>
+            <div class="category-card" data-category="desserts">
+                <div class="category-icon">🍰</div>
+                <div class="category-title">Desserts</div>
+            </div>
+            <div class="category-card" data-category="ice-cream">
+                <div class="category-icon">🍨</div>
+                <div class="category-title">Ice Cream</div>
+            </div>
+            <div class="category-card" data-category="saving-offers">
+                <div class="category-icon">💰</div>
+                <div class="category-title">Saving Offers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle"><span></span></button>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <ul>
+            <li><button data-category="home"><span class="category-icon">🏠</span>Home</button></li>
+            <li><button data-category="hot-drinks" class="active"><span class="category-icon">☕</span>Hot Drinks</button></li>
+            <li><button data-category="cold-drinks"><span class="category-icon">🧊</span>Cold Drinks</button></li>
+            <li><button data-category="smoothies"><span class="category-icon">🥤</span>Smoothies</button></li>
+            <li><button data-category="frappes"><span class="category-icon">🧋</span>Frappes</button></li>
+            <li><button data-category="milk-shakes"><span class="category-icon">🥛</span>Milk Shakes</button></li>
+            <li><button data-category="soft-drinks"><span class="category-icon">🥤</span>Soft Drinks</button></li>
+            <li><button data-category="fresh-juices"><span class="category-icon">🍹</span>Fresh Juices</button></li>
+            <li><button data-category="cocktails"><span class="category-icon">🍹</span>Cocktails</button></li>
+            <li><button data-category="salads"><span class="category-icon">🥗</span>Salads</button></li>
+            <li><button data-category="sandwiches"><span class="category-icon">🥪</span>Sandwiches</button></li>
+            <li><button data-category="toasts"><span class="category-icon">🍞</span>Toasts</button></li>
+            <li><button data-category="tortilla-bread"><span class="category-icon">🌯</span>Tortilla Bread</button></li>
+            <li><button data-category="bakeries"><span class="category-icon">🥐</span>Bakeries</button></li>
+            <li><button data-category="desserts"><span class="category-icon">🍰</span>Desserts</button></li>
+            <li><button data-category="ice-cream"><span class="category-icon">🍨</span>Ice Cream</button></li>
+            <li><button data-category="saving-offers"><span class="category-icon">💰</span>Saving Offers</button></li>
+        </ul>
+    </div>
+
+    <!-- Sidebar Backdrop -->
+    <div class="sidebar-backdrop"></div>
+
+    <!-- Main Menu -->
+    <header class="hidden">
+        <img src="../images/PHOTO-2025-07-14-16-16-31-removebg-preview.png" alt="Brazilian Coffee Stores Logo" class="logo">
+        <div class="tagline">Brazilian Coffee Stores</div>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search our exquisite menu...">
+        <div id="searchSuggestions"></div>
+        <button class="home-button" data-category="home"><span class="category-icon">🏠</span>Back to Home</button>
+    </div>
+
+    <div class="menu-section hidden">
+        <div class="category-content" id="hot-drinks">
+            <h3>Hot Drinks ☕</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Espresso</span><span class="price">30</span></div>
+                <div class="menu-item"><span>Double espresso</span><span class="price">36</span></div>
+                <div class="menu-item"><span>Macchiato (Single)</span><span class="price">32</span></div>
+                <div class="menu-item"><span>Macchiato (Double)</span><span class="price">38</span></div>
+                <div class="menu-item"><span>Double Macchiato with flavors (caramel - Hazelnut - Almonds - Chocolate - Mint - vanilla)</span><span class="price">46</span></div>
+                <div class="menu-item"><span>Turkish coffee (Single)</span><span class="price">32</span></div>
+                <div class="menu-item"><span>Turkish coffee (Double)</span><span class="price">34</span></div>
+                <div class="menu-item"><span>Turkish coffee with flavors (caramel - Hazelnut - Almonds - Chocolate - Mint - vanilla)</span><span class="price">45</span></div>
+                <div class="menu-item"><span>Turkish coffee with milk</span><span class="price">36</span></div>
+                <div class="menu-item"><span>Turkish coffee with milk & with flavors (caramel - Hazelnut - Almonds - Chocolate - Mint - vanilla)</span><span class="price">46</span></div>
+                <div class="menu-item"><span>Turkish coffee with Nutella</span><span class="price">46</span></div>
+                <div class="menu-item"><span>American Coffee</span><span class="price">32</span></div>
+                <div class="menu-item"><span>French Coffee</span><span class="price">39</span></div>
+                <div class="menu-item"><span>Nescafe Gold</span><span class="price">38</span></div>
+                <div class="menu-item"><span>Nescafe Gold with Milk</span><span class="price">56</span></div>
+                <div class="menu-item"><span>Nescafe (Black)</span><span class="price">32</span></div>
+                <div class="menu-item"><span>Nescafe with milk (Medium)</span><span class="price">40</span></div>
+                <div class="menu-item"><span>Nescafe with milk (Large)</span><span class="price">50</span></div>
+                <div class="menu-item"><span>Cappuccino (Medium)</span><span class="price">41</span></div>
+                <div class="menu-item"><span>Cappuccino (Large)</span><span class="price">52</span></div>
+                <div class="note-item">With the possibility of adding flavors (caramel - Hazelnut - Almonds - Chocolate - Mint - vanilla) +15</div>
+                <div class="menu-item"><span>Mocha (Medium)</span><span class="price">39</span></div>
+                <div class="menu-item"><span>Mocha (Large)</span><span class="price">47</span></div>
+                <div class="menu-item"><span>Chocochino (Cappuccino with Nutella Chocolate) Medium</span><span class="price">59</span></div>
+                <div class="menu-item"><span>Chocochino (Large)</span><span class="price">69</span></div>
+                <div class="menu-item"><span>Hot Chocolate (Medium)</span><span class="price">37</span></div>
+                <div class="menu-item"><span>Hot Chocolate (Large)</span><span class="price">45</span></div>
+                <div class="menu-item"><span>Black Tea</span><span class="price">25</span></div>
+                <div class="menu-item"><span>Tea with Mint</span><span class="price">26</span></div>
+                <div class="menu-item"><span>Green Tea</span><span class="price">26</span></div>
+                <div class="menu-item"><span>Tea with Milk</span><span class="price">28</span></div>
+                <div class="menu-item"><span>Anise / mint / cinnamon / Telia / ginger / Hibiscus</span><span class="price">21</span></div>
+                <div class="menu-item"><span>Cinnamon with Milk</span><span class="price">33</span></div>
+                <div class="menu-item"><span>Fruits Flavored Tea (peaches - lemon - apple - strawberry)</span><span class="price">33</span></div>
+                <div class="menu-item"><span>Herbs with honey and milk (cinnamon - ginger + honey + milk)</span><span class="price">34</span></div>
+                <div class="menu-item"><span>Hot Cider (apple juice + cinnamon sticks)</span><span class="price">39</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="cold-drinks">
+            <h3>Cold Drinks 🧊</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Iced Chocolate</span><span class="price">37</span></div>
+                <div class="menu-item"><span>Iced Cappuccino / Nescafe / Mocha / Latte</span><span class="price">41</span></div>
+                <div class="menu-item"><span>Extra Coffee blended (double Espresso + Milk + whipped Cream)</span><span class="price">46</span></div>
+                <div class="menu-item"><span>Iced Chocochino (double Espresso + Milk + Crushed Ice + Nutella + Chocolate sauce)</span><span class="price">59</span></div>
+                <div class="note-item">With the possibility of adding flavors (caramel - Hazelnut - Almonds - Chocolate - Mint - vanilla) +15</div>
+            </div>
+        </div>
+
+        <div class="category-content" id="smoothies">
+            <h3>Smoothies 🥤</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Blueberry / Mango / Chocolate / Kiwi / Peach / Watermelon / Strawberry</span><span class="price">56</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="frappes">
+            <h3>Frappes 🧋</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Frappe (Milk + Crushed Ice + Vanilla or Chocolate + Whipped Cream)</span><span class="price">34</span></div>
+                <div class="menu-item"><span>Mocha Frappe (Espresso + Nesquik + Crushed Ice + Milk + Whipped Cream)</span><span class="price">43</span></div>
+                <div class="menu-item"><span>Iced Frappuccino (Espresso + Caramel Sauce + Crushed Ice + whipped Cream)</span><span class="price">54</span></div>
+                <div class="menu-item"><span>Latte Frappe (Espresso + Milk + Crushed Ice)</span><span class="price">43</span></div>
+                <div class="note-item">With the possibility of adding flavors (Hazelnut - Caramel - Vanilla - Mint - Chocolate - Almond) +15</div>
+            </div>
+        </div>
+
+        <div class="category-content" id="milk-shakes">
+            <h3>Milk Shakes 🥛</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Vanilla</span><span class="price">36</span></div>
+                <div class="menu-item"><span>Chocolate - Caramel - strawberry - Banana - Mango</span><span class="price">45</span></div>
+                <div class="menu-item"><span>Oreo Shake</span><span class="price">54</span></div>
+                <div class="menu-item"><span>Dream Shake (Nutella / Maltesers / m & m's / Snickers / Mars)</span><span class="price">52</span></div>
+                <div class="menu-item"><span>Blueberry</span><span class="price">52</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="soft-drinks">
+            <h3>Soft Drinks 🥤</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Cola / Sprite / Fanta / 7 up / Pepsi / Schweppes Gold</span><span class="price">17</span></div>
+                <div class="menu-item"><span>Diet Coke / Sprite Diet / Diet 7 up / Pepsi Zero</span><span class="price">17</span></div>
+                <div class="menu-item"><span>Red Bull</span><span class="price">52</span></div>
+                <div class="menu-item"><span>Small Water</span><span class="price">10</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="fresh-juices">
+            <h3>Fresh Juices 🍹</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Lemon / Orange</span><span class="price">33</span></div>
+                <div class="menu-item"><span>Lemon with Mint</span><span class="price">39</span></div>
+                <div class="menu-item"><span>Fresh Juices (Watermelon / Pomegranate / Cantaloupe / Strawberry / Guava / Peach / Kiwi / Mango)</span><span class="price">42</span></div>
+                <div class="menu-item"><span>Banana with Milk</span><span class="price">39</span></div>
+                <div class="menu-item"><span>Fresh Cocktail</span><span class="price">49</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="cocktails">
+            <h3>Cocktails 🍹</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Sunshine (7 up + Lemon Slices + Mint Syrup)</span><span class="price">42</span></div>
+                <div class="menu-item"><span>Sunrise (Orange Juice + 7 up + Strawberry Syrup)</span><span class="price">42</span></div>
+                <div class="menu-item"><span>Julie (Yogurt + Honey)</span><span class="price">42</span></div>
+                <div class="menu-item"><span>Mojito (7 up + Fresh Mint + Lemon Slices + Mint Syrup)</span><span class="price">43</span></div>
+                <div class="menu-item"><span>Cherry Cola (Cola + Cherry Syrup)</span><span class="price">43</span></div>
+                <div class="menu-item"><span>Pina Colada (Pineapple Juice + Coconut syrup)</span><span class="price">43</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="salads">
+            <h3>Salads 🥗</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Chicken Salad</span><span class="price">64</span></div>
+                <div class="menu-item"><span>Tuna Salad</span><span class="price">64</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="sandwiches">
+            <h3>Sandwiches 🥪</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Hot Dog / Tuna</span><span class="price">50</span></div>
+                <div class="menu-item"><span>Italian Chicken / sliced Roast Beef / Smoked Turkey/ Grilled Chicken</span><span class="price">68</span></div>
+                <div class="menu-item"><span>Smoked Turkey with Cheddar Cheese</span><span class="price">71</span></div>
+                <div class="menu-item"><span>Club Sandwich (Chicken or Roast Beef or Tuna or Smoked Turkey) + Cheese</span><span class="price">82</span></div>
+                <div class="menu-item"><span>Double Club Sandwich (Chicken or Smoked Turkey or Tuna or Roast Beef) + Cheese</span><span class="price">100</span></div>
+                <div class="menu-item"><span>Mix Cheese (Gouda + Cheddar + Edam)</span><span class="price">69</span></div>
+                <div class="menu-item"><span>Extra Cheese</span><span class="price">22</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="toasts">
+            <h3>Toasts 🍞</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Romy Cheese Or Kiri</span><span class="price">38.50</span></div>
+                <div class="menu-item"><span>Romy Cheese with cucumber / White Cheese with tomatos</span><span class="price">42</span></div>
+                <div class="menu-item"><span>Smoked Turkey with mayo</span><span class="price">50</span></div>
+                <div class="menu-item"><span>Romy Cheese with Pastrami / Kiri with Pastrami / Smoked Turkey with Cheddar</span><span class="price">42</span></div>
+                <div class="menu-item"><span>Mozzarella Cheese with Tomatos</span><span class="price">50</span></div>
+                <div class="menu-item"><span>Chicken Or Roast Beef or Tuna</span><span class="price">64</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="tortilla-bread">
+            <h3>Tortilla Bread 🌯</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Romy Cheese Or Kiri</span><span class="price">38</span></div>
+                <div class="menu-item"><span>Romy Cheese with cucumber / White Cheese with tomatos</span><span class="price">42</span></div>
+                <div class="menu-item"><span>Smoked Turkey with mayo</span><span class="price">42</span></div>
+                <div class="menu-item"><span>Romy Cheese with Pastrami / Kiri with Pastrami / Smoked Turkey with Cheddar</span><span class="price">50</span></div>
+                <div class="menu-item"><span>Mozzarella Cheese with Tomatos</span><span class="price">50</span></div>
+                <div class="menu-item"><span>Chicken Or Roast Beef or Tuna</span><span class="price">65</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="bakeries">
+            <h3>Bakeries 🥐</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Croissant - Pate</span><span class="price">33</span></div>
+                <div class="menu-item"><span>Croissant with Cheese (Cheddar or white with Tomatos)</span><span class="price">41</span></div>
+                <div class="menu-item"><span>Croissant (Smoked Turkey or Roast beef or Chicken or Tuna)</span><span class="price">52</span></div>
+                <div class="menu-item"><span>Pate with Sausage</span><span class="price">41</span></div>
+                <div class="menu-item"><span>Pizza (Hot dog or Margarita)</span><span class="price">50</span></div>
+                <div class="menu-item"><span>Extra Cheese</span><span class="price">21</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="desserts">
+            <h3>Desserts 🍰</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Swiss Roll (Jam or Chocolate) / Mille-feuille (Jam or Chocolate or Sugar) / Sables / Ball / Amaret / Macaron</span><span class="price">32.5</span></div>
+                <div class="menu-item"><span>Chocolate Cake (with Flutes) / Brownies</span><span class="price">49.5</span></div>
+                <div class="menu-item"><span>Chocolate Cake (Kit Kat)</span><span class="price">54.5</span></div>
+                <div class="menu-item"><span>Cheese Cake (Chocolate sauce or Blueberry or Caramel or Strawberry)</span><span class="price">58</span></div>
+                <div class="menu-item"><span>Molten Cake</span><span class="price">63.5</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="ice-cream">
+            <h3>Ice Cream 🍨</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Brownies with Ice Cream</span><span class="price">60</span></div>
+                <div class="menu-item"><span>Ice cream with Sauce (Vanilla or Chocolate or Caramel or Strawberry)</span><span class="price">46</span></div>
+                <div class="menu-item"><span>Seasonal fruit Salad</span><span class="price">54</span></div>
+                <div class="menu-item"><span>Seasonal fruit Salad (with the addition of Ice Cream)</span><span class="price">65</span></div>
+                <div class="menu-item"><span>Banana Split (Banana + Ice Cream + Chocolate Sauce)</span><span class="price">73</span></div>
+            </div>
+        </div>
+
+        <div class="category-content" id="saving-offers">
+            <h3>Saving Offers 💰</h3>
+            <div class="items-container">
+                <div class="menu-item"><span>Tea-Time (hot drink - Dessert)</span><span class="price">63.5</span></div>
+                <div class="menu-item"><span>Extra (Croissant or Pizza or Pate + Toast + hot drink)</span><span class="price">90</span></div>
+                <div class="menu-item"><span>Super (Sandwich + Dessert + hot drink)</span><span class="price">109</span></div>
+                <div class="menu-item"><span>Special (Sandwich + Salad + Chips + Cans)</span><span class="price">117.5</span></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="hidden">
+        Crafted with passion at Brazilian Coffee Stores<br>
+        <span class="note">Prices include 14% VAT + 10% Service | Some items may contain allergens</span>
+    </footer>
+
+    <script>
+        // Collect all menu items with names and prices for autocomplete
+        const menuItems = Array.from(document.querySelectorAll('.menu-item')).map(item => ({
+            name: item.querySelector('span:first-child').textContent,
+            price: item.querySelector('.price').textContent
+        }));
+
+        // Welcome Screen Category Selection
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const categoryId = card.getAttribute('data-category');
+                document.querySelector('.welcome-screen').classList.add('hidden');
+                document.querySelector('header').classList.remove('hidden');
+                document.querySelector('.search-container').style.display = 'block';
+                document.querySelector('.menu-section').classList.remove('hidden');
+                document.querySelector('footer').classList.remove('hidden');
+                document.querySelector('.sidebar').style.display = 'block';
+                document.querySelector('.sidebar').classList.add('active');
+                document.querySelector('.sidebar-toggle').style.display = 'block';
+                document.querySelector('.sidebar-toggle').classList.add('active');
+                document.querySelector('.sidebar-backdrop').classList.add('active');
+                showCategory(categoryId);
+            });
+        });
+
+        // Sidebar Toggle
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.querySelector('.sidebar-toggle');
+        const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            sidebarToggle.classList.toggle('active');
+            sidebarBackdrop.classList.toggle('active');
+        });
+
+        // Close sidebar when clicking outside or on backdrop
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target) && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                sidebarToggle.classList.remove('active');
+                sidebarBackdrop.classList.remove('active');
+            }
+        });
+
+        sidebarBackdrop.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarToggle.classList.remove('active');
+            sidebarBackdrop.classList.remove('active');
+        });
+
+        function showCategory(categoryId) {
+            if (categoryId === 'home') {
+                // Return to welcome screen
+                document.querySelector('.welcome-screen').classList.remove('hidden');
+                document.querySelector('header').classList.add('hidden');
+                document.querySelector('.search-container').style.display = 'none';
+                document.querySelector('.menu-section').classList.add('hidden');
+                document.querySelector('footer').classList.add('hidden');
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-toggle').classList.remove('active');
+                document.querySelector('.sidebar-backdrop').classList.remove('active');
+                document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
+                return;
+            }
+
+            // Ensure header, search, menu, footer, and sidebar stay visible
+            document.querySelector('header').classList.remove('hidden');
+            document.querySelector('.search-container').style.display = 'block';
+            document.querySelector('.menu-section').classList.remove('hidden');
+            document.querySelector('footer').classList.remove('hidden');
+            document.querySelector('.sidebar').style.display = 'block';
+
+            // Hide all categories and remove active class from buttons
+            document.querySelectorAll('.category-content').forEach(cat => {
+                cat.classList.remove('active');
+                cat.classList.remove('collapsed');
+                cat.querySelectorAll('.menu-item, .note-item').forEach(item => {
+                    item.classList.remove('visible');
+                    item.classList.remove('highlight');
+                    const textElement = item.querySelector('span:first-child') || item;
+                    textElement.innerHTML = textElement.textContent.replace(/<mark>/g, '').replace(/<\/mark>/g, '');
+                });
+            });
+            document.querySelectorAll('.sidebar button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected category and mark button as active
+            const category = document.getElementById(categoryId);
+            if (category) {
+                category.classList.add('active');
+                document.querySelector(`.sidebar button[data-category="${categoryId}"]`).classList.add('active');
+
+                // Animate items
+                const items = category.querySelectorAll('.menu-item, .note-item');
+                items.forEach((item, index) => {
+                    setTimeout(() => {
+                        item.classList.add('visible');
+                    }, index * 60);
+                });
+
+                // Scroll to category
+                category.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Category navigation
+        document.querySelectorAll('.sidebar button, .home-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const categoryId = button.getAttribute('data-category');
+                showCategory(categoryId);
+                if (categoryId !== 'home') {
+                    sidebar.classList.remove('active');
+                    sidebarToggle.classList.remove('active');
+                    sidebarBackdrop.classList.remove('active');
+                }
+            });
+        });
+
+        // Collapsible category headers
+        document.querySelectorAll('.category-content h3').forEach(header => {
+            header.addEventListener('click', () => {
+                const category = header.closest('.category-content');
+                category.classList.toggle('collapsed');
+            });
+        });
+
+        // Enhanced Search functionality with autocomplete and debounce
+        const searchInput = document.getElementById('searchInput');
+        const searchSuggestions = document.getElementById('searchSuggestions');
+        let debounceTimer;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const filter = searchInput.value.toLowerCase().trim();
+                const items = document.querySelectorAll('.menu-item, .note-item');
+                const categories = document.querySelectorAll('.category-content');
+
+                // Ensure header, search, menu, footer, and sidebar stay visible
+                document.querySelector('header').classList.remove('hidden');
+                document.querySelector('.search-container').style.display = 'block';
+                document.querySelector('.menu-section').classList.remove('hidden');
+                document.querySelector('footer').classList.remove('hidden');
+                document.querySelector('.sidebar').style.display = 'block';
+
+                // Reset category navigation
+                document.querySelectorAll('.sidebar button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // Autocomplete suggestions with prices
+                searchSuggestions.innerHTML = '';
+                if (filter) {
+                    const matchingItems = menuItems.filter(item => item.name.toLowerCase().includes(filter)).slice(0, 5);
+                    matchingItems.forEach(match => {
+                        const div = document.createElement('div');
+                        div.innerHTML = `<span>${match.name}</span><span class="suggestion-price">${match.price}</span>`;
+                        div.addEventListener('click', () => {
+                            searchInput.value = match.name;
+                            searchSuggestions.style.display = 'none';
+                            searchInput.dispatchEvent(new Event('input'));
+                        });
+                        searchSuggestions.appendChild(div);
+                    });
+                    searchSuggestions.style.display = matchingItems.length ? 'block' : 'none';
+                } else {
+                    searchSuggestions.style.display = 'none';
+                }
+
+                if (filter) {
+                    let anyVisible = false;
+                    categories.forEach(cat => {
+                        let hasVisibleItems = false;
+                        const categoryItems = cat.querySelectorAll('.menu-item, .note-item');
+                        categoryItems.forEach(item => {
+                            const textElement = item.querySelector('span:first-child') || item;
+                            let text = textElement.textContent.toLowerCase();
+                            item.classList.remove('highlight');
+                            textElement.innerHTML = textElement.textContent; // Reset content
+
+                            if (text.includes(filter)) {
+                                // Highlight matching text
+                                const regex = new RegExp(`(${filter})`, 'gi');
+                                textElement.innerHTML = textElement.textContent.replace(regex, '<mark>$1</mark>');
+                                item.style.display = 'flex';
+                                item.classList.add('visible');
+                                item.classList.add('highlight');
+                                hasVisibleItems = true;
+                                anyVisible = true;
+                            } else {
+                                item.style.display = 'none';
+                                item.classList.remove('visible');
+                            }
+                        });
+                        cat.classList.toggle('active', hasVisibleItems);
+                        cat.classList.remove('collapsed'); // Ensure category is expanded
+                    });
+
+                    if (anyVisible) {
+                        document.querySelector('.category-content.active').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    // Reset to default view
+                    categories.forEach(cat => {
+                        cat.classList.remove('active');
+                        cat.classList.remove('collapsed');
+                        cat.querySelectorAll('.menu-item, .note-item').forEach(item => {
+                            item.style.display = 'flex';
+                            item.classList.remove('highlight');
+                            const textElement = item.querySelector('span:first-child') || item;
+                            textElement.innerHTML = textElement.textContent.replace(/<mark>/g, '').replace(/<\/mark>/g, '');
+                        });
+                    });
+                    showCategory('hot-drinks');
+                }
+            }, 100); // Faster debounce for mobile
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchSuggestions.contains(e.target) && e.target !== searchInput) {
+                searchSuggestions.style.display = 'none';
+            }
+        });
+
+        // Highlight style for search matches
+        const style = document.createElement('style');
+        style.textContent = `
+            mark {
+                background: #b07a47;
+                color: #fff8ef;
+                padding: 2px 5px;
+                border-radius: 4px;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

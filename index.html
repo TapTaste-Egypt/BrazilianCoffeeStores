@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TapTaste Landing</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #f5e6d3, #f9f5f0);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        overflow-x: hidden;
+    }
+
+    /* Floating coffee beans animation */
+    .bean {
+        position: absolute;
+        font-size: 2rem;
+        color: rgba(120, 72, 42, 0.2);
+        animation: floatBeans 10s infinite linear;
+        z-index: 0;
+    }
+    @keyframes floatBeans {
+        0% { transform: translateY(110vh) rotate(0deg); }
+        100% { transform: translateY(-10vh) rotate(360deg); }
+    }
+
+    header {
+        text-align: center;
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .top-logo { max-width: 160px; animation: fadeInDown 1s ease-in-out; }
+
+    .tagline {
+        font-size: 1.3rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        background: linear-gradient(90deg, #8b5e3c, #d4a373);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-top: 12px;
+        position: relative;
+        display: inline-block;
+        animation: fadeInTagline 1.2s ease-in-out forwards;
+    }
+
+    .tagline::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.6), transparent);
+        animation: shimmer 2.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { left: -100%; }
+        50% { left: 100%; }
+        100% { left: 100%; }
+    }
+
+    @keyframes fadeInTagline {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Button Grid */
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* two buttons beside each other */
+        gap: 15px;
+        width: 100%;
+        max-width: 500px;
+        margin-top: 30px;
+        z-index: 1;
+    }
+
+    /* Centered button row for Pay the Check */
+    .center-btn {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    /* Button Style */
+    .btn {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(12px);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        color: #5a3e2b;
+        font-weight: 600;
+        padding: 15px;
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        text-align: center;
+        cursor: pointer;
+        font-size: 1rem;
+        text-decoration: none;
+        display: block;
+        width: 100%;
+    }
+
+    .btn i {
+        display: block;
+        font-size: 1.5rem;
+        margin-bottom: 6px;
+        transition: transform 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-5px) scale(1.03);
+        background: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+    }
+
+    .btn:hover i { transform: scale(1.12); }
+
+    /* Pay the Check special styling */
+    .highlight-btn {
+        background: linear-gradient(135deg, #d4a373, #8b5e3c);
+        color: white;
+        border: none;
+    }
+
+    .highlight-btn:hover {
+        background: linear-gradient(135deg, #b97d55, #6e452b);
+    }
+
+    footer {
+        margin-top: auto;
+        font-size: 0.85rem;
+        color: #7a5b47;
+        padding: 15px 0;
+        text-align: center;
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Laptop view */
+    @media (min-width: 992px) {
+        .top-logo { max-width: 200px; }
+        .tagline { font-size: 1.6rem; }
+        .button-grid {
+            grid-template-columns: repeat(4, 1fr); /* 4 across on big screens */
+            gap: 25px;
+            max-width: 800px;
+        }
+        .btn {
+            font-size: 1.1rem;
+            padding: 20px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<!-- Floating coffee beans -->
+<span class="bean" style="left:5%; animation-delay: 0s;">☕</span>
+<span class="bean" style="left:20%; animation-delay: 2s;">🍪</span>
+<span class="bean" style="left:40%; animation-delay: 4s;">☕</span>
+<span class="bean" style="left:60%; animation-delay: 1s;">🍩</span>
+<span class="bean" style="left:80%; animation-delay: 3s;">☕</span>
+
+<header>
+    <div>
+        <img src="./images/PHOTO-2025-07-14-16-16-31-removebg-preview.png" alt="TapTaste Logo" class="top-logo">
+        <h2 class="tagline">Brazilian Coffee Stores</h2>
+    </div>
+</header>
+
+<div class="button-grid">
+    <a href="./Html/MenuPage.html" class="btn">
+        <i class="fas fa-utensils"></i>
+        View Menu
+    </a>
+    <a href="./mini games/minigamesChoice.html" class="btn">
+        <i class="fas fa-gamepad"></i>
+        Mini Games
+    </a>
+    <a href="https://share.google/VPtrViP03uq3zxPPp" target="_blank" class="btn">
+        <i class="fas fa-star"></i>
+        Rate Us
+    </a>
+    <a href="./socialMedia.html" class="btn">
+        <i class="fas fa-share-alt"></i>
+        Follow Us
+    </a>
+</div>
+
+<div class="center-btn">
+    <a href="https://ipn.eg/S/a_elmallah79/instapay/6UAFgG" class="btn highlight-btn" style="max-width: 220px;">
+        <i class="fas fa-credit-card"></i>
+        Pay the Check
+    </a>
+</div>
+
+<footer>
+    © Copyrights to TapTaste
+</footer>
+
+</body>
+</html>

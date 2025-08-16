@@ -6,17 +6,17 @@
 <title>Coffee Stack — Cartoon Café</title>
 <style>
   :root{
-    --latte1:#f8e6cf;
-    --latte2:#f1d3ac;
-    --espresso:#5b3a27;
-    --bean:#6f4e37;
-    --cream:#fff7ef;
-    --shadow:rgba(0,0,0,.28);
+    --latte1:#ffd700;
+    --latte2:#ffaa00;
+    --espresso:#4a2c1a;
+    --bean:#8b5a2b;
+    --cream:#fff8e6;
+    --shadow:rgba(0,0,0,.4);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0; overflow:hidden; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif;
+    margin:0; overflow:hidden; font-family: "Comic Sans MS", "Chalkboard", sans-serif;
     background: linear-gradient(180deg,var(--latte1),var(--latte2));
     touch-action: manipulation;
   }
@@ -25,28 +25,42 @@
     position:fixed; inset:auto 0 auto 0; top:14px; display:flex; justify-content:center; gap:12px; z-index:5; pointer-events:none;
   }
   .pill{
-    background:rgba(255,255,255,.78);
-    border:1px solid rgba(0,0,0,.08);
-    padding:.45rem .8rem; border-radius:999px; font-weight:700; color:#3a281d;
-    box-shadow:0 6px 16px var(--shadow); pointer-events:auto;
+    background:rgba(255,255,255,.9);
+    border:2px solid #000;
+    padding:.5rem 1rem; border-radius:999px; font-weight:900; color:#3a281d;
+    box-shadow:0 8px 20px var(--shadow); pointer-events:auto;
   }
   .pill b{font-weight:900}
+  #homeBtn{
+    background:linear-gradient(180deg,#ff99cc,#ff6699);
+    border:2px solid #000;
+    padding:.5rem 1rem; border-radius:999px; font-weight:900; color:#3a281d;
+    box-shadow:0 8px 20px var(--shadow); cursor:pointer;
+    text-decoration:none; display:inline-block;
+    transition: transform 0.2s ease, background 0.2s ease;
+    pointer-events:auto; /* Enable pointer events for the home button */
+  }
+  #homeBtn:hover{
+    transform: scale(1.1);
+    background: linear-gradient(180deg,#ff66b2,#ff3385);
+  }
+  #homeBtn:active{transform:scale(.95)}
   #btn{
     position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
-    padding:.9rem 1.3rem; border:none; border-radius:16px; background:linear-gradient(180deg,#ffe3b9,#ffce86);
-    color:#432a1a; font-weight:800; letter-spacing:.3px; cursor:pointer; z-index:6;
-    box-shadow:0 10px 24px var(--shadow), inset 0 1px 0 #fff6e3; display:none;
+    padding:1rem 1.5rem; border:3px solid #000; border-radius:20px; background:linear-gradient(180deg,#ffeb99,#ffcc33);
+    color:#3a281d; font-weight:900; letter-spacing:.5px; cursor:pointer; z-index:6;
+    box-shadow:0 12px 28px var(--shadow), inset 0 2px 0 #fff; display:none;
   }
-  #btn:active{transform:translateX(-50%) scale(.98)}
+  #btn:active{transform:translateX(-50%) scale(.95)}
   #perfect{
     position:fixed; left:50%; top:50%; transform:translate(-50%,-60%); pointer-events:none;
-    font-weight:900; font-size: clamp(24px, 5vw, 44px); color:#4b2f1f; text-shadow:0 8px 24px rgba(0,0,0,.25);
+    font-weight:900; font-size: clamp(28px, 6vw, 48px); color:#ff4500; text-shadow:0 10px 28px rgba(0,0,0,.4);
     opacity:0; transition:opacity .28s ease, transform .28s ease;
   }
   #perfect.show{opacity:1; transform:translate(-50%,-65%)}
   #message{
     position:fixed; left:50%; top:45%; transform:translate(-50%,-50%); pointer-events:none;
-    font-weight:900; font-size: clamp(20px, 4vw, 36px); color:#ff8c00; text-shadow:0 6px 18px rgba(0,0,0,.2);
+    font-weight:900; font-size: clamp(24px, 5vw, 40px); color:#ff4500; text-shadow:0 8px 20px rgba(0,0,0,.3);
     opacity:0; transition:opacity .3s ease, transform .3s ease;
   }
   #message.show{opacity:1; transform:translate(-50%,-55%)}
@@ -59,6 +73,7 @@
   <div class="pill">Score: <b id="score">0</b></div>
   <div class="pill">Level: <b id="lvl">1</b></div>
   <div class="pill">Best: <b id="best">0</b></div>
+  <a id="homeBtn" href="./miniGamesChoice.html">Home</a>
 </div>
 <button id="btn">Play Again</button>
 <div id="perfect">PERFECT!</div>
@@ -84,11 +99,26 @@
   const lvlEl   = document.getElementById('lvl');
   const bestEl  = document.getElementById('best');
   const againBtn= document.getElementById('btn');
+  const homeBtn = document.getElementById('homeBtn');
   const perfectEl = document.getElementById('perfect');
   const messageEl = document.getElementById('message');
 
   let best = +(localStorage.getItem('coffee-best')||0);
   bestEl.textContent = best;
+
+  // Home button error handling
+  homeBtn.addEventListener('click', (e) => {
+    console.log('Home link clicked, navigating to ./miniGamesChoice.html...');
+    // Navigation handled by <a> tag's href, but log for debugging
+    setTimeout(() => {
+      if (window.location.pathname.endsWith('miniGamesChoice.html')) {
+        console.log('Successfully navigated to miniGamesChoice.html');
+      } else {
+        console.warn('Navigation may have failed; still on same page');
+        alert('Failed to navigate to miniGamesChoice.html. Please ensure the file exists in the same directory as this game. If it’s elsewhere, update the href attribute of the #homeBtn <a> tag to the correct path (e.g., "../miniGamesChoice.html").');
+      }
+    }, 500); // Delay to check navigation result
+  });
 
   // ===== Game state =====
   const beans = [];
@@ -106,22 +136,19 @@
   let CUP_H, BASE_W, MIN_W, LEFT_BOUND, RIGHT_BOUND, GROUND_Y, PERFECT_PX;
 
   function layoutSizes(){
-    CUP_H = Math.max(44, Math.min(84, H * 0.12)); // base cup height
-    BASE_W = Math.min(280, Math.max(160, W * 0.55));
-    MIN_W  = Math.max(18, BASE_W * 0.12);
+    CUP_H = Math.max(50, Math.min(90, H * 0.14));
+    BASE_W = Math.min(300, Math.max(180, W * 0.6));
+    MIN_W  = Math.max(20, BASE_W * 0.15);
     LEFT_BOUND  = 12;
     RIGHT_BOUND = Math.max(LEFT_BOUND+40, W - 12);
-    GROUND_Y = H - 60;
+    GROUND_Y = H - 70;
     PERFECT_PX = Math.max(6, Math.min(12, W * 0.02));
   }
 
   // speed scaling
-  let baseSpeed = 2.6;
+  let baseSpeed = 2.8;
   let speed = baseSpeed;
   let dir = 1;
-
-  // Brazilian coffee brands
-  const brands = ['Café Pilão', 'Café do Ponto', '3 Corações', 'Melitta', 'Orfeu', 'Santa Mônica', 'Unique', 'Café Caboclo', 'Nescafé'];
 
   // ===== Helpers =====
   function reset(){
@@ -129,7 +156,6 @@
     stack = [];
     particles = [];
     floatingTexts = [];
-    // Base cup on the floor
     const baseX = (W - BASE_W)/2;
     const base = makeCup(baseX, GROUND_Y, BASE_W);
     stack.push(base);
@@ -137,11 +163,10 @@
     updateHUD();
     againBtn.style.display = 'none';
     perfectEl.classList.remove('show');
-    // Beans
     beans.length = 0;
-    const n = 24;
+    const n = 20;
     for(let i=0;i<n;i++){
-      beans.push({x: Math.random()*W, y: Math.random()*H, r: 7+Math.random()*10, a:.08+.08*Math.random(), s: .2+.4*Math.random()});
+      beans.push({x: Math.random()*W, y: Math.random()*H, r: 10+Math.random()*12, a:.1+.1*Math.random(), s: .3+.5*Math.random()});
     }
   }
 
@@ -151,23 +176,18 @@
   }
 
   function makeCup(x, y, w){
-    // alternate cup type for variety
-    const brand = brands[Math.floor(Math.random() * brands.length)];
-    return { x, y, w, h: CUP_H, t: (stack.length % 2 ? 'mug':'togo'), squish:0, brand };
+    return { x, y, w, h: CUP_H, t: (stack.length % 2 ? 'mug':'togo'), squish:0 };
   }
 
   function spawnMover(isFirst=false){
     const last = stack[stack.length-1];
-    const y = last.y - CUP_H; // exactly one cup-height above last
+    const y = last.y - CUP_H;
     const fromLeft = Math.random() < 0.5;
-    // shrink width slightly with levels for challenge
     const levelShrink = Math.min(0.28, (level-1)*0.02);
     const w = Math.max(MIN_W, last.w * (1 - levelShrink));
     const x = fromLeft ? LEFT_BOUND : Math.max(LEFT_BOUND, RIGHT_BOUND - w);
     mover = makeCup(x, y, w);
     dir = fromLeft ? +1 : -1;
-
-    // keep spawn always visible
     cam = (mover.y - mover.h) - H * 0.3;
     if (isFirst) cam = 0;
   }
@@ -182,14 +202,14 @@
 
   function createSplash(cx, cy, count){
     for(let i=0; i<count; i++){
-      const angle = Math.random() * Math.PI - Math.PI/2; // upward
-      const vel = 2 + Math.random() * 3;
+      const angle = Math.random() * Math.PI - Math.PI/2;
+      const vel = 2.5 + Math.random() * 4;
       particles.push({
         x: cx,
         y: cy,
         vx: Math.cos(angle) * vel,
         vy: Math.sin(angle) * vel,
-        size: 1 + Math.random() * 2,
+        size: 2 + Math.random() * 3,
         life: 1,
         color: '#3a281d'
       });
@@ -198,15 +218,17 @@
 
   // ===== Drawing =====
   function drawBackground(t){
-    // floating coffee beans with slight parallax vs camera
     for(const b of beans){
       b.y += b.s;
       if (b.y - cam > H + 30) { b.y -= H + 90; b.x = Math.random()*W; }
       ctx.globalAlpha = b.a;
-      ctx.fillStyle = '#6f4e37';
+      ctx.fillStyle = '#8b5a2b';
       ctx.beginPath();
-      ctx.ellipse(b.x, b.y - cam*0.2, b.r, b.r*0.6, Math.PI/4, 0, Math.PI*2);
+      ctx.arc(b.x, b.y - cam*0.2, b.r, 0, Math.PI*2);
       ctx.fill();
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
     ctx.globalAlpha = 1;
   }
@@ -223,103 +245,89 @@
   }
 
   function drawToGo(c, t, isMoving){
-    const {x,y,w,h,squish,brand} = c;
+    const {x,y,w,h,squish} = c;
     const top = y - h;
-    const scaleY = 1 - 0.3 * Math.max(0, Math.min(1, squish));
+    const scaleY = 1 - 0.4 * Math.max(0, Math.min(1, squish));
     const scaledH = h*scaleY;
-    const oy = h - scaledH; // keep bottom anchored
+    const oy = h - scaledH;
 
-    // shadow
-    ctx.globalAlpha=.28;
-    ctx.fillStyle='rgba(0,0,0,.35)';
+    ctx.globalAlpha=.4;
+    ctx.fillStyle='rgba(0,0,0,.5)';
     ctx.beginPath();
-    ctx.ellipse(x + w/2, y + 6, w*.4, 7, 0, 0, Math.PI*2);
+    ctx.ellipse(x + w/2, y + 8, w*.45, 8, 0, 0, Math.PI*2);
     ctx.fill();
     ctx.globalAlpha=1;
 
-    // cup body
-    const bodyGrad = ctx.createLinearGradient(x, top+oy+8, x, top+oy+scaledH-12);
-    bodyGrad.addColorStop(0, '#fff4e6');
-    bodyGrad.addColorStop(1, '#ffd4b8');
+    const bodyGrad = ctx.createLinearGradient(x, top+oy+10, x, top+oy+scaledH-14);
+    bodyGrad.addColorStop(0, '#ffeb99');
+    bodyGrad.addColorStop(1, '#ffcc66');
     ctx.fillStyle = bodyGrad;
-    ctx.strokeStyle= '#6f4e37';
-    ctx.lineWidth = 3;
-    roundRect(x, top+oy+8, w, scaledH-12, 12);
+    ctx.strokeStyle= '#000';
+    ctx.lineWidth = 4;
+    roundRect(x, top+oy+10, w, scaledH-14, 16);
     ctx.fill(); ctx.stroke();
 
-    // brand name
-    ctx.fillStyle = '#6f4e37';
-    ctx.font = `${Math.min(12, w/10)}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(brand, x + w/2, top + oy + scaledH * 0.5);
+    ctx.fillStyle = '#8b5a2b';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 3;
+    roundRect(x-2, top+oy-10, w+4, 14, 10);
+    ctx.fill(); ctx.stroke();
 
-    // lid
-    ctx.fillStyle = '#6f4e37';
-    roundRect(x-2, top+oy-8, w+4, 12, 8);
-    ctx.fill();
-
-    // sip hole
     ctx.fillStyle = '#3a281d';
-    roundRect(x + w - 24, top+oy - 6, 16, 6, 3);
+    roundRect(x + w - 26, top+oy - 8, 18, 8, 4);
     ctx.fill();
 
-    // animated steam
-    ctx.strokeStyle = 'rgba(255,255,255,.7)';
-    ctx.lineWidth = 2;
-    const sx = x + w*0.5, sy = top+oy-10;
-    const offset1 = Math.sin(t / 200) * 3;
-    const offset2 = Math.sin(t / 250 + 1) * 3;
+    ctx.strokeStyle = 'rgba(255,255,255,1)';
+    ctx.lineWidth = 3;
+    const sx = x + w*0.5, sy = top+oy-12;
+    const offset1 = Math.sin(t / 180) * 4;
+    const offset2 = Math.sin(t / 220 + 1) * 4;
     ctx.beginPath();
-    ctx.moveTo(sx-10 + offset1, sy);
-    ctx.quadraticCurveTo(sx-14 + offset1, sy-16, sx-8 + offset1, sy-30);
-    ctx.moveTo(sx+10 + offset2, sy);
-    ctx.quadraticCurveTo(sx+14 + offset2, sy-16, sx+8 + offset2, sy-30);
+    ctx.moveTo(sx-12 + offset1, sy);
+    ctx.quadraticCurveTo(sx-16 + offset1, sy-20, sx-10 + offset1, sy-36);
+    ctx.moveTo(sx+12 + offset2, sy);
+    ctx.quadraticCurveTo(sx+16 + offset2, sy-20, sx+10 + offset2, sy-36);
     ctx.stroke();
   }
 
   function drawMug(c, t, isMoving){
-    const {x,y,w,h,squish,brand} = c;
+    const {x,y,w,h,squish} = c;
     const top = y - h;
-    const scaleY = 1 - 0.3 * Math.max(0, Math.min(1, squish));
+    const scaleY = 1 - 0.4 * Math.max(0, Math.min(1, squish));
     const scaledH = h*scaleY;
     const oy = h - scaledH;
 
-    // shadow
-    ctx.globalAlpha=.28;
-    ctx.fillStyle='rgba(0,0,0,.35)';
+    ctx.globalAlpha=.4;
+    ctx.fillStyle='rgba(0,0,0,.5)';
     ctx.beginPath();
-    ctx.ellipse(x + w/2, y + 6, w*.4, 7, 0, 0, Math.PI*2);
+    ctx.ellipse(x + w/2, y + 8, w*.45, 8, 0, 0, Math.PI*2);
     ctx.fill();
     ctx.globalAlpha=1;
 
-    // body
-    const r = 12;
     const bodyGrad = ctx.createLinearGradient(x, top+oy, x, top+oy + scaledH);
-    bodyGrad.addColorStop(0, '#ffe8d1');
-    bodyGrad.addColorStop(1, '#ffc7a3');
+    bodyGrad.addColorStop(0, '#ffeb99');
+    bodyGrad.addColorStop(1, '#ffcc66');
     ctx.fillStyle = bodyGrad;
-    ctx.strokeStyle='#6f4e37';
-    ctx.lineWidth=3;
-    roundRect(x, top+oy, w, scaledH, r);
+    ctx.strokeStyle='#000';
+    ctx.lineWidth=4;
+    roundRect(x, top+oy, w, scaledH, 16);
     ctx.fill(); ctx.stroke();
 
-    // handle
     ctx.beginPath();
-    ctx.lineWidth=6;
-    ctx.strokeStyle='#caa787';
-    ctx.arc(x+w-6, top+oy+scaledH*0.48, scaledH*0.28, -Math.PI/2.2, Math.PI/1.2, true);
+    ctx.lineWidth=8;
+    ctx.strokeStyle='#ffaa00';
+    ctx.arc(x+w-6, top+oy+scaledH*0.48, scaledH*0.3, -Math.PI/2.2, Math.PI/1.2, true);
     ctx.stroke();
 
-    // rim
-    const rimGrad = ctx.createLinearGradient(x+6, top+oy-8, x+6, top+oy-8 + 10);
-    rimGrad.addColorStop(0, '#ffffff');
-    rimGrad.addColorStop(1, '#ffece0');
+    const rimGrad = ctx.createLinearGradient(x+6, top+oy-10, x+6, top+oy-10 + 12);
+    rimGrad.addColorStop(0, '#fff');
+    rimGrad.addColorStop(1, '#ffeb99');
     ctx.fillStyle = rimGrad;
-    roundRect(x+6, top+oy-8, w-12, 10, 6);
-    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    roundRect(x+6, top+oy-10, w-12, 12, 8);
+    ctx.fill(); ctx.stroke();
 
-    // coffee liquid with slosh if moving
     const liquidTop = top + oy + scaledH * 0.15;
     const liquidH = scaledH * 0.6;
     const liquidGrad = ctx.createLinearGradient(x + 8, liquidTop, x + 8, liquidTop + liquidH);
@@ -328,7 +336,7 @@
     ctx.fillStyle = liquidGrad;
 
     ctx.beginPath();
-    const tilt = isMoving ? -dir * speed * 0.5 : 0; // fixed direction for realistic lag
+    const tilt = isMoving ? -dir * speed * 0.5 : 0;
     const leftY = liquidTop + tilt;
     const rightY = liquidTop - tilt;
     ctx.moveTo(x + 8, leftY + liquidH);
@@ -338,24 +346,16 @@
     ctx.closePath();
     ctx.fill();
 
-    // brand name
-    ctx.fillStyle = '#6f4e37';
-    ctx.font = `${Math.min(12, w/10)}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(brand, x + w/2, top + oy + scaledH * 0.8);
-
-    // animated steam
-    ctx.strokeStyle='rgba(255,255,255,.7)';
-    ctx.lineWidth=2;
-    const sx = x + w*0.5, sy = top+oy-6;
-    const offset1 = Math.sin(t / 200) * 3;
-    const offset2 = Math.sin(t / 250 + 1) * 3;
+    ctx.strokeStyle='rgba(255,255,255,1)';
+    ctx.lineWidth=3;
+    const sx = x + w*0.5, sy = top+oy-8;
+    const offset1 = Math.sin(t / 180) * 4;
+    const offset2 = Math.sin(t / 220 + 1) * 4;
     ctx.beginPath();
     ctx.moveTo(sx-12 + offset1, sy);
-    ctx.quadraticCurveTo(sx-16 + offset1, sy-18, sx-10 + offset1, sy-34);
+    ctx.quadraticCurveTo(sx-16 + offset1, sy-20, sx-10 + offset1, sy-36);
     ctx.moveTo(sx+12 + offset2, sy);
-    ctx.quadraticCurveTo(sx+16 + offset2, sy-18, sx+10 + offset2, sy-34);
+    ctx.quadraticCurveTo(sx+16 + offset2, sy-20, sx+10 + offset2, sy-36);
     ctx.stroke();
   }
 
@@ -367,7 +367,7 @@
 
   // ===== Placement & logic =====
   function levelUpIfNeeded(){
-    const nextLevel = Math.floor(score/5) + 1; // every 5 stacks = new level
+    const nextLevel = Math.floor(score/5) + 1;
     if (nextLevel > level){
       level = nextLevel;
       updateHUD();
@@ -384,12 +384,11 @@
     const overlapR = Math.min(lx1, mx1);
     const overlapW = overlapR - overlapL;
 
-    if (overlapW <= 0) { // miss completely -> game over
+    if (overlapW <= 0) {
       end();
       return;
     }
 
-    // perfect?
     let isPerfect = false;
     if (Math.abs(mx0 - lx0) <= PERFECT_PX && Math.abs(mx1 - lx1) <= PERFECT_PX){
       mover.x = last.x;
@@ -406,12 +405,10 @@
     mover.squish = 1;
     stack.push(mover);
 
-    // splash if mug
     if (mover.t === 'mug') {
       createSplash(mover.x + mover.w / 2, mover.y - mover.h + 20, 15);
     }
 
-    // floating score
     floatingTexts.push({
       x: mover.x + mover.w / 2,
       y: mover.y - mover.h,
@@ -420,13 +417,9 @@
       vy: -1.5
     });
 
-    // level progression
     levelUpIfNeeded();
-
-    // spawn next
     spawnMover();
 
-    // speed up every 3 drops
     const drops = stack.length - 1;
     if (drops % 3 === 0 && drops > 0) {
       const increase = 0.5;
@@ -434,13 +427,12 @@
       showMessage(`Speed up by ${increase}!`);
     }
 
-    // update HUD
     updateHUD();
   }
 
   function flashPerfect(){
     perfectEl.classList.remove('show');
-    void perfectEl.offsetWidth; // reflow to re-trigger
+    void perfectEl.offsetWidth;
     perfectEl.classList.add('show');
     setTimeout(()=>perfectEl.classList.remove('show'), 420);
   }
@@ -459,14 +451,10 @@
     requestAnimationFrame(tick);
     const dt = Math.min(32, t - lastT || 16); lastT = t;
 
-    // clear
     ctx.clearRect(0,0,W,H);
-
-    // background beans
     drawBackground(t);
 
     if (!gameOver && mover){
-      // move horizontally + bounce at edges respecting mover width
       const leftBound = LEFT_BOUND;
       const rightBound = Math.max(leftBound+MIN_W, W - LEFT_BOUND - mover.w);
       mover.x += dir * speed;
@@ -474,20 +462,16 @@
       if (mover.x >= rightBound){ mover.x = rightBound; dir = -1; }
     }
 
-    // camera follows moving cup (keeps it visible)
-    // keep the top of mover around ~30% of screen height
     const targetCam = (() => {
       const focus = mover ? (mover.y - mover.h) : (stack[stack.length-1].y - stack[stack.length-1].h);
       const desiredScreenY = H * 0.3;
       return focus - desiredScreenY;
     })();
-    cam += (targetCam - cam) * 0.35; // faster follow
+    cam += (targetCam - cam) * 0.35;
 
-    // draw stack + mover
     ctx.save();
     ctx.translate(0, -cam);
 
-    // particles
     for(let i = particles.length - 1; i >= 0; i--){
       const p = particles[i];
       p.x += p.vx;
@@ -504,7 +488,6 @@
       ctx.fill();
     }
 
-    // floating texts
     for(let i = floatingTexts.length - 1; i >= 0; i--){
       const ft = floatingTexts[i];
       ft.y += ft.vy;
@@ -514,7 +497,7 @@
         continue;
       }
       ctx.fillStyle = `rgba(75, 47, 31, ${ft.alpha})`;
-      ctx.font = 'bold 20px Arial';
+      ctx.font = 'bold 24px Comic Sans MS';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(ft.text, ft.x, ft.y);
@@ -527,9 +510,8 @@
     }
     if (mover) drawCup(mover, t);
 
-    // floor line
-    ctx.fillStyle='rgba(0,0,0,.22)';
-    ctx.fillRect(0, GROUND_Y+4, W, 3);
+    ctx.fillStyle='rgba(0,0,0,.3)';
+    ctx.fillRect(0, GROUND_Y+4, W, 4);
 
     ctx.restore();
   }
